@@ -115,22 +115,38 @@ public class bdd {
 
         try {
             state = connection().createStatement();
-            for(int i = 0; i !=1000; i++){
-                ResultSet rs = state.executeQuery("SELECT title, artist, album from record where id ="+ i +"");
+
+           // ResultSet lastIdRelease = state.executeQuery("SELECT MAX(ID) from record where category = 'test'");
+            ResultSet lastIdRelease = state.executeQuery("SELECT ID FROM record where category = 'test' ORDER BY ID DESC");
+            lastIdRelease.next();
+            int lastId = lastIdRelease.getInt("id");
+
+
+            ResultSet firstIdRelease = state.executeQuery("SELECT ID FROM record where category = 'test' ORDER BY ID ASC");
+            firstIdRelease.next();
+            int firstId = firstIdRelease.getInt("id");
+
+
+            for(int i = firstId; i <= lastId; i++){
+                System.out.println(i);
+
+                ResultSet rs = state.executeQuery("SELECT title, artist, album, higherprice, have, want from record where id ="+ i +" and category = 'test'");
                 while (rs.next()) {
 
                     String search;
 
-                    if(!rs.getString("title").equals(rs.getString("artist"))){
-                        search = rs.getString("artist")+" "+rs.getString("album");
-                    }else{
+                //    if(!rs.getString("title").equals(rs.getString("artist"))){
+                //        search = rs.getString("artist")+" "+rs.getString("album");
+                //    }else{
                         search = rs.getString("title");
-                    }
+                //    }
 
-                    //int higherprice = rs.getInt("higherprice");
-                    //System.out.println(higherprice);
+                    Record record = new Record();
+                    record.setHigherPrice(rs.getInt("higherprice"));
+                    record.setHave(rs.getInt("have"));
+                    record.setWant(rs.getInt("want"));
 
-                    Ebay.getJSON(search,0);
+                    Ebay.getJSON(search,record);
                 }
 
 

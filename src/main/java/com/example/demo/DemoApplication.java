@@ -58,7 +58,6 @@ public class DemoApplication {
 
 
 
-
 		bdd.getAllTablesNames();
 
 		String ebayUrl = "http://svcs.ebay.com/services/search/FindingService/v1?OPERATION-NAME=findItemsAdvanced&SERVICE-VERSION=1.0.0&SECURITY-APPNAME=PierreHu-Discogs-PRD-d5f82ec3d-72388a54&RESPONSE-DATA-FORMAT=JSON&REST-PAYLOAD&keywords=";
@@ -68,9 +67,10 @@ public class DemoApplication {
 		String filter="&categoryId(0)=176985";
 		Connection conn = bdd.connection();
 
+
 		// Remplis la BDD en fonction d'une url
-		//Discogs.getJSON(conn, req);
-		
+		//Discogs.addReleasesToBddFromRequest(conn, req);
+
 
 
 		Statement state;

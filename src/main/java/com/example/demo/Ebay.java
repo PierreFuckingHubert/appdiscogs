@@ -18,10 +18,11 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.util.StringUtils;
 
 public class Ebay {
 
-    public static void getJSON(String search, int higherprice){
+    public static void getJSON(String search, Record record){
 
         String stringJ = null;
         String Urlsearch = search;
@@ -47,6 +48,8 @@ public class Ebay {
             URL url = new URL(Urlsearch);
 
             URLConnection uc = url.openConnection();
+       //     uc.disconnect();
+
             InputStream in = uc.getInputStream();
             int c = in.read();
             StringBuilder build = new StringBuilder();
@@ -63,60 +66,65 @@ public class Ebay {
 
         }
 
-       // System.out.println("stringJ : " + stringJ);
+        System.out.println("stringJ : " + stringJ);
+        if(stringJ != null) {
+
+            JSONObject JSON = new JSONObject();
+            try {
+                JSON = new JSONObject(stringJ);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            JSONArray values = null;
+            try {
+
+                values = JSON.getJSONArray("findItemsAdvancedResponse").getJSONObject(0).getJSONArray("searchResult").getJSONObject(0).getJSONArray("item");
+                int nbItems = Integer.parseInt(JSON.getJSONArray("findItemsAdvancedResponse").getJSONObject(0).getJSONArray("searchResult").getJSONObject(0).getString("@count"));
+
+                if (nbItems < 4) {
+                    for (int i = 0; i < values.length(); i++) {
+
+                        String url = (String) values.getJSONObject(i).getJSONArray("viewItemURL").get(0);
+                        //StringUtils.countOccurrencesOf(url.toLowerCase(), "new")
+                        if (!url.toLowerCase().contains("reissue") && !url.toLowerCase().contains("new")) {
+                            String p = (String) values.getJSONObject(i).getJSONArray("sellingStatus").getJSONObject(0).getJSONArray("currentPrice").getJSONObject(0).get("__value__");
+                            Double price = Double.parseDouble(p);
+
+                            if (((record.getHigherPrice() > 50) || (record.getHigherPrice()  == -1)) && (((record.getHigherPrice()  / price) > 2) || ((record.getHigherPrice()  / price) < 0)) || record.getHigherPrice()  == 0) {
+                             //   if (true) {
+
+                                System.out.println(url);
+                                System.out.println(price);
+                                System.out.println(values.getJSONObject(i).getJSONArray("sellingStatus").getJSONObject(0).getJSONArray("currentPrice").getJSONObject(0).get("@currencyId"));
+                                System.out.println("HigherPrice : " + record.getHigherPrice() );
+                                System.out.println("==================================");
+
+                                List<String> lignes = new ArrayList<>();
+
+                                String listingType = (String) values.getJSONObject(i).getJSONArray("listingInfo").getJSONObject(0).getJSONArray("listingType").get(0);
 
 
-        JSONObject JSON = new JSONObject();
-        try {
-            JSON = new JSONObject(stringJ);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        JSONArray values = null;
-        try {
+                                lignes.add("Type sell : " + listingType);
+                                lignes.add("Recherche : " + search);
+                                lignes.add(url);
+                                lignes.add("HigherPrice : " + record.getHigherPrice() );
+                                lignes.add("Prix : " + price.toString());
+                                lignes.add("==================================");
 
-            values = JSON.getJSONArray("findItemsAdvancedResponse").getJSONObject(0).getJSONArray("searchResult").getJSONObject(0).getJSONArray("item");
+                                try {
+                                    Files.write(fichier, lignes, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 
-            if(values.length()<5) {
-                for (int i = 0; i < values.length(); i++) {
-
-                    String url = (String) values.getJSONObject(i).getJSONArray("viewItemURL").get(0);
-
-                    if (!url.contains("reissue")) {
-                        String p = (String) values.getJSONObject(i).getJSONArray("sellingStatus").getJSONObject(0).getJSONArray("currentPrice").getJSONObject(0).get("__value__");
-                        //Double price = p;
-                        Double price = Double.parseDouble(p);
-
-                        //if (((higherprice > 50) || (higherprice == -1)) && (((higherprice / price) > 2) || ((higherprice / price) < 0)) || higherprice == 0) {
-                        if (true) {
-
-                        System.out.println(url);
-                            System.out.println(price);
-                            System.out.println(values.getJSONObject(i).getJSONArray("sellingStatus").getJSONObject(0).getJSONArray("currentPrice").getJSONObject(0).get("@currencyId"));
-                            System.out.println("HigherPrice : " + higherprice);
-                            System.out.println("==================================");
-
-                            List<String> lignes = new ArrayList<>();
-
-                            lignes.add("Recherche : " + search);
-                            lignes.add(url);
-                            lignes.add("Prix : " + price.toString());
-                            lignes.add("==================================");
-
-                            try {
-                                Files.write(fichier, lignes, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-
-                            } catch (IOException e) {
-                                e.printStackTrace();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                     }
                 }
+            } catch (JSONException e) {
+                //e.printStackTrace();
             }
-        } catch (JSONException e) {
-            //e.printStackTrace();
         }
-
 
     }
 }

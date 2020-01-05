@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import org.json.JSONArray;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -64,6 +65,15 @@ public class MachinController {
         System.out.println("FINI!!!!!!!!!!!!!");
         return "ok";
     }
+
+    @PostMapping("/addReleasesToBdd")
+    public String addReleasesToBdd(@RequestBody String request) {
+        System.out.println("addReleases java :");
+        Connection conn = bdd.connection();
+        Discogs.addReleasesToBddFromRequest(conn, request);
+        return "ok";
+    }
+
 
 
 
