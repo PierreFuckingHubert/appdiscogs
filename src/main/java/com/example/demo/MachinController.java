@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 @Controller
 @RestController
 public class MachinController {
+
     @RequestMapping("/hello")
     public @ResponseBody String home(){
         return "Hello Worlddddee!";
@@ -70,15 +71,17 @@ public class MachinController {
     public String addReleasesToBdd(@RequestBody String request) {
         System.out.println("addReleases java :");
         Connection conn = bdd.connection();
-        Discogs.addReleasesToBddFromRequest(conn, request);
+        Discogs.addReleasesToBddFromRequest(conn, request, false);
         return "ok";
     }
 
-
-
-
-
-
+    @PostMapping("/addRatedReleasesToBdd")
+    public String addRatedReleasesToBdd(@RequestBody String request) {
+        System.out.println("addRatedReleasesToBdd :");
+        Connection conn = bdd.connection();
+        Discogs.addReleasesToBddFromRequest(conn, request, true);
+        return "ok";
+    }
 
 
 

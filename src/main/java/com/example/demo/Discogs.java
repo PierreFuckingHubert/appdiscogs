@@ -25,14 +25,15 @@ public class Discogs {
     static int q;
     static int count = 0;
     static String yearParam = "&year=";
-    static int year = 1977;
+    static int year = 1980;
     static int yearEnd = 1997;
 
     public Discogs(){
     }
 
-    //obtenir la réponse d'un
-    public static void addReleasesToBddFromRequest(Connection conn, String req){
+
+
+    public static void addReleasesToBddFromRequest(Connection conn, String req, boolean isRated){
 
         String stringJ = null;
         req = req+yearParam+year;
@@ -78,7 +79,7 @@ public class Discogs {
                 String reqs[]  = req.split("&page=");
                 req = reqs[0];
                 year++;
-                addReleasesToBddFromRequest(conn,req);
+                addReleasesToBddFromRequest(conn,req, isRated);
 
             }else if(year < yearEnd){
                 if(JSON.getJSONObject("pagination").getInt("pages") != JSON.getJSONObject("pagination").getInt("page")){
@@ -107,70 +108,113 @@ public class Discogs {
                     System.out.println("Disque "+(count+i+1));
 
 
-                    if(jsonRelease.toString() == "null"){
+                    if(jsonRelease.toString() == "null" || isRated){
 
+                        System.out.println("json record : "+ values.getJSONObject(i));
                         String urlRelease = values.getJSONObject(i).getString("uri");
+
 
                         int year = 0;
 
                         if(values.getJSONObject(i).has("year") && !values.getJSONObject(i).isNull("year")){
                             year = Integer.parseInt(values.getJSONObject(i).getString("year"));
-                            System.out.println("year : "+ year);
                         }
 
 
                         int have = values.getJSONObject(i).getJSONObject("community").getInt("have");
                         int want = values.getJSONObject(i).getJSONObject("community").getInt("want");
 
-                        if(want>45 && have<want){
-
-                            Record record = addPricesToRecord(getHtmlFromUrl(startUrlItem+urlRelease));
-
-                            String name = values.getJSONObject(i).getString("title");
-
-                            name = name.replaceAll("--", " ");
-
-                            System.out.println("LA : "+ name);
-
-                            String names[]  = name.split("-");
-                            names[1] = names[1].substring(1);
-                            names[1] = names[1].replaceAll("'", " ");
 
 
-                            String titles[] = urlRelease.split("/");
-                            String title = titles[1];
-                            //title = title.replaceAll("-", "&");
+                        if(isRated){
+                            String idRelease = values.getJSONObject(i).getString("id");
 
-                            int ratio;
+                            System.out.println("json record : "+ values.getJSONObject(i));
 
-
-                            if(record != null){
-                                System.out.println("Url : "+ urlRelease);
-                                System.out.println("Artist : "+ names[0]);
-                                System.out.println("Album : "+ names[1]);
-                                System.out.println("Lower price : "+ record.getLowerPrice());
-                                System.out.println("Median price : "+ record.getMedianPrice());
-                                System.out.println("Higher price : "+ record.getHigherPrice());
-                                System.out.println("Have : "+ have);
-                                System.out.println("Want : "+ want);
-                                //System.out.println("Ratio : "+ want);
-                            }
-                            System.out.println("-------------------------------------");
+                            RateObj rateObj = ratedRecord(getHtmlFromUrl(startUrlItem+"/release/stats/"+idRelease));
 
 
-                            if(record != null && (record.getHigherPrice() > 100 || record.getHigherPrice() == -1)){
+                            if(rateObj.getRate() > 1){
 
-                                String artist = names[0].replaceAll("'", " ");
-                                String album = names[1].replaceAll("'", " ");
+                                urlRelease = "https://www.discogs.com"+urlRelease;
+                                String style = "";
+
+
+                                for(int k = 0; k< values.getJSONObject(i).getJSONArray("genre").length(); k ++){
+                                    style = style + values.getJSONObject(i).getJSONArray("genre").get(k).toString()+ ",";
+                                }
+                                for(int l = 0; l< values.getJSONObject(i).getJSONArray("style").length(); l ++){
+                                    style = style + values.getJSONObject(i).getJSONArray("style").get(l).toString()+ ",";
+                                }
+
+                                System.out.println("style : " + style);
+                                System.out.println("rateObj.getRate() : " + rateObj.getRate());
+                                System.out.println("rateObj.getRaters() : " + rateObj.getRaters());
 
                                 Statement state;
                                 try {
                                     state = conn.createStatement();
-                                    state.executeUpdate("INSERT INTO record (category, title, artist, album, lowerprice, medianprice, higherprice, have, want) VALUES ('test','"+ title +"','"+ artist +"', '"+ album +"','"+ record.getLowerPrice() +"','"+ record.getMedianPrice() +"','"+ record.getHigherPrice() +"','"+ have +"','"+ want +"')");
-                                    //state.executeUpdate("INSERT INTO record (title, artist, album, lowerprice, medianprice, higherprice, have, want) VALUES ('"+ title +"','"+ names[0] +"', '"+ names[1] +"','"+ record.getLowerPrice() +"','"+ record.getMedianPrice() +"','"+ record.getHigherPrice() +"','"+ have +"','"+ want +"')");
+                                    state.executeUpdate("INSERT INTO raterecords3 (category, title, have, want, style, note, raters) VALUES ('test','" + urlRelease + "','" + have + "','" + want + "','" + style + "','" + rateObj.getRate() + "','" + rateObj.getRaters() + "')");
 
                                 } catch (SQLException e) {
                                     e.printStackTrace();
+                                }
+                            }
+
+
+                        }else {
+
+                            if (want > 45 && have < want) {
+
+                                Record record = addPricesToRecord(getHtmlFromUrl(startUrlItem + urlRelease));
+
+
+                                String name = values.getJSONObject(i).getString("title");
+
+                                name = name.replaceAll("--", " ");
+
+                                System.out.println("LA : " + name);
+
+                                String names[] = name.split("-");
+                                names[1] = names[1].substring(1);
+                                names[1] = names[1].replaceAll("'", " ");
+
+
+                                String titles[] = urlRelease.split("/");
+                                String title = titles[1];
+                                //title = title.replaceAll("-", "&");
+
+                                int ratio;
+
+
+                                if (record != null) {
+                                    System.out.println("Url : " + urlRelease);
+                                    System.out.println("Artist : " + names[0]);
+                                    System.out.println("Album : " + names[1]);
+                                    System.out.println("Lower price : " + record.getLowerPrice());
+                                    System.out.println("Median price : " + record.getMedianPrice());
+                                    System.out.println("Higher price : " + record.getHigherPrice());
+                                    System.out.println("Have : " + have);
+                                    System.out.println("Want : " + want);
+                                    //System.out.println("Ratio : "+ want);
+                                }
+                                System.out.println("-------------------------------------");
+
+
+                                if (record != null && (record.getHigherPrice() > 100 || record.getHigherPrice() == -1)) {
+
+                                    String artist = names[0].replaceAll("'", " ");
+                                    String album = names[1].replaceAll("'", " ");
+
+                                    Statement state;
+                                    try {
+                                        state = conn.createStatement();
+                                        state.executeUpdate("INSERT INTO record (category, title, artist, album, lowerprice, medianprice, higherprice, have, want) VALUES ('test','" + title + "','" + artist + "', '" + album + "','" + record.getLowerPrice() + "','" + record.getMedianPrice() + "','" + record.getHigherPrice() + "','" + have + "','" + want + "')");
+                                        //state.executeUpdate("INSERT INTO record (title, artist, album, lowerprice, medianprice, higherprice, have, want) VALUES ('"+ title +"','"+ names[0] +"', '"+ names[1] +"','"+ record.getLowerPrice() +"','"+ record.getMedianPrice() +"','"+ record.getHigherPrice() +"','"+ have +"','"+ want +"')");
+
+                                    } catch (SQLException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         }
@@ -178,7 +222,7 @@ public class Discogs {
 
                 }
                 count = count + 100;
-                addReleasesToBddFromRequest(conn,req);
+                addReleasesToBddFromRequest(conn,req, isRated);
             }else{
                 System.out.println("FINI !!!!!!!!!!!!!!!!!");
             }
@@ -312,6 +356,33 @@ public class Discogs {
         return htmlReleasePage;
     }
 
+
+
+    public static RateObj ratedRecord(String html){
+
+        String listTopRaters[][] = {{"chrisbonato", "exte82", "Intercourse" , "lonerg","graeme_w","leolyxxx","wdjc","timetodiy","zc8","mostfaded","TheGuyWithSunglasses","daveambassador"},{"2","1","3","1","2","2","3","2","1","1","1","2"}};
+        Document doc = Jsoup.parse(html);
+        Element element = doc.select(".release_stats_group").first();
+
+        RateObj rateObj = new RateObj(0, "");
+
+        if(element != null){
+            String el = doc.select(".release_stats_group").first().toString();
+            boolean haveRatings = el.contains("Ratings");
+            if(haveRatings){
+                for(int i=0; i< listTopRaters[0].length; i++){
+                    if(el.contains(listTopRaters[0][i])){
+                        rateObj.setRate(rateObj.getRate() + Integer.parseInt(listTopRaters[1][i]));
+                        rateObj.setRaters(rateObj.getRaters()+listTopRaters[0][i]+", ");
+                    }
+                }
+            }
+        }
+
+        return rateObj;
+    }
+
+
     public static Record addPricesToRecord(String html){
 
         String low, med, high = null;
@@ -364,24 +435,6 @@ public class Discogs {
 
             return record;
         }
-    }
-
-    public static String findHigherPrice2(String html){
-        String higherPrice = null;
-
-        String balise = "<h4>Highest:</h4>";
-
-        int begin = (html.indexOf(balise))+37;
-        int end = html.indexOf(" ", begin);
-
-        if(end == begin){
-            return "Pas de prix";
-        }
-        else{
-            higherPrice = html.substring(begin, end);
-            return higherPrice;
-        }
-
     }
 
 }

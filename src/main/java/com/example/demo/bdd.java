@@ -51,7 +51,7 @@ public class bdd {
 
             //String sql = "CREATE TABLE "+ tableName +"(id INT SERIAL PRIMARY KEY,title VARCHAR (100),artist VARCHAR (100),album VARCHAR (100),lowerprice integer,medianprice integer,higherprice integer,have integer,want integer)");
 
-            String sql = "CREATE TABLE IF NOT EXISTS "+ tableName +" (id SERIAL PRIMARY KEY, category VARCHAR (100), title VARCHAR (100),artist VARCHAR (100),album VARCHAR (100),urldiscogs VARCHAR (200),lowerprice integer,medianprice integer,higherprice integer,have integer,want integer)";
+            String sql = "CREATE TABLE IF NOT EXISTS "+ tableName +" (id SERIAL PRIMARY KEY, category VARCHAR (100), title VARCHAR (100),artist VARCHAR (100),album VARCHAR (100),urldiscogs VARCHAR (200),lowerprice integer,medianprice integer,higherprice integer,have integer,want integer, style VARCHAR (200), note integer, raters VARCHAR (200), date integer)";
             System.out.println(sql);
 
 
