@@ -1,21 +1,11 @@
 package com.example.demo;
-import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 
 import java.sql.Connection;
-import java.util.ArrayList;
+
 import org.json.JSONArray;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @Controller
@@ -30,6 +20,13 @@ public class MachinController {
     @RequestMapping("/tablesNames")
     public @ResponseBody String serviceGetTablesNames(){
         JSONArray jsArray = new JSONArray(bdd.getAllTablesNames());
+        return jsArray.toString();
+    }
+
+    @RequestMapping(value = "/records")
+    public String serviceGetRecords(@RequestParam(value = "tablename") String tablename){
+        JSONArray jsArray = new JSONArray(bdd.getRecords(tablename));
+
         return jsArray.toString();
     }
 
@@ -68,18 +65,18 @@ public class MachinController {
     }
 
     @PostMapping("/addReleasesToBdd")
-    public String addReleasesToBdd(@RequestBody String request) {
+    public String addReleasesToBdd(@RequestBody SearchObj searchObj) {
         System.out.println("addReleases java :");
         Connection conn = bdd.connection();
-        Discogs.addReleasesToBddFromRequest(conn, request, false);
+        Discogs.addReleasesToBddFromRequest(conn, searchObj, false);
         return "ok";
     }
 
     @PostMapping("/addRatedReleasesToBdd")
-    public String addRatedReleasesToBdd(@RequestBody String request) {
+    public String addRatedReleasesToBdd(@RequestBody SearchObj searchObj) {
         System.out.println("addRatedReleasesToBdd :");
         Connection conn = bdd.connection();
-        Discogs.addReleasesToBddFromRequest(conn, request, true);
+        Discogs.addReleasesToBddFromRequest(conn, searchObj, true);
         return "ok";
     }
 

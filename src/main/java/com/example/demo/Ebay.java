@@ -10,15 +10,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.util.StringUtils;
 
 public class Ebay {
 
@@ -90,13 +87,13 @@ public class Ebay {
                             String p = (String) values.getJSONObject(i).getJSONArray("sellingStatus").getJSONObject(0).getJSONArray("currentPrice").getJSONObject(0).get("__value__");
                             Double price = Double.parseDouble(p);
 
-                            if (((record.getHigherPrice() > 50) || (record.getHigherPrice()  == -1)) && (((record.getHigherPrice()  / price) > 2) || ((record.getHigherPrice()  / price) < 0)) || record.getHigherPrice()  == 0) {
+                            if (((record.getHigherprice() > 50) || (record.getHigherprice()  == -1)) && (((record.getHigherprice()  / price) > 2) || ((record.getHigherprice()  / price) < 0)) || record.getHigherprice()  == 0) {
                              //   if (true) {
 
                                 System.out.println(url);
                                 System.out.println(price);
                                 System.out.println(values.getJSONObject(i).getJSONArray("sellingStatus").getJSONObject(0).getJSONArray("currentPrice").getJSONObject(0).get("@currencyId"));
-                                System.out.println("HigherPrice : " + record.getHigherPrice() );
+                                System.out.println("HigherPrice : " + record.getHigherprice() );
                                 System.out.println("==================================");
 
                                 List<String> lignes = new ArrayList<>();
@@ -107,7 +104,7 @@ public class Ebay {
                                 lignes.add("Type sell : " + listingType);
                                 lignes.add("Recherche : " + search);
                                 lignes.add(url);
-                                lignes.add("HigherPrice : " + record.getHigherPrice() );
+                                lignes.add("HigherPrice : " + record.getHigherprice() );
                                 lignes.add("Prix : " + price.toString());
                                 lignes.add("==================================");
 

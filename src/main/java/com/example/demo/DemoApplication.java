@@ -10,6 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -51,10 +52,12 @@ public class DemoApplication {
 		//http://www.discogs.com/users/ratings/pierrecool
 		//http://www.discogs.com/users/pierrecool/wants
 
+		Connection conn = bdd.connection();
 
-
-
-
+		String collection = "https://api.discogs.com/users/pierrecool/collection/folders/0/releases?token="+token+"&per_page=100";
+		String wantlist = "https://api.discogs.com/users/pierrecool/wants?token="+token+"&per_page=100";
+		//Discogs.getCollection(conn, wantlist);
+		//Discogs.triRaters(conn);
 
 
 
@@ -65,38 +68,10 @@ public class DemoApplication {
 		//String filter="";
 
 		String filter="&categoryId(0)=176985";
-		Connection conn = bdd.connection();
 
 
 		// Remplis la BDD en fonction d'une url
 		//Discogs.addReleasesToBddFromRequest(conn, req);
-
-
-
-		Statement state;
-
-	//	try {
-			//state = conn.createStatement();
-			//for(int i = 0; i !=300; i++){
-			//	ResultSet rs = state.executeQuery("SELECT title, higherprice from record where id ="+ i +"");
-			//	while (rs.next()) {
-			//		String search = rs.getString("title");
-			//		int higherprice = rs.getInt("higherprice");
-					//System.out.println(higherprice);
-
-			//		search = search.replaceAll("-", "%20");
-			//		String finalRequest = ebayUrl+search+filter;
-			//		Ebay.getJSON(finalRequest,higherprice);
-			//	}
-
-
-		//	}
-		//} catch (SQLException e) {
-	//		e.printStackTrace();
-		//}
-
-
-
 
 
 	}

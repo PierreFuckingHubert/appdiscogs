@@ -3,8 +3,8 @@ package com.example.demo;
 //taper pgAdmin dans finder
 // mdp : supercool
 
-import java.awt.*;
-import java.io.File;
+import org.springframework.jdbc.core.JdbcTemplate;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -14,7 +14,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 
 public class bdd {
 
@@ -142,7 +141,7 @@ public class bdd {
                 //    }
 
                     Record record = new Record();
-                    record.setHigherPrice(rs.getInt("higherprice"));
+                    record.setHigherprice(rs.getInt("higherprice"));
                     record.setHave(rs.getInt("have"));
                     record.setWant(rs.getInt("want"));
 
@@ -169,7 +168,7 @@ public class bdd {
             query = "INSERT INTO record (category, title, artist, album, urldiscogs) VALUES ('"+ data.category +"','"+ data.url +"','"+ data.url +"', '"+ data.url +"', '"+ data.url +"')";
         }else{
             Record record = Discogs.getRecord(data.url);
-            query = "INSERT INTO record (category, title, artist, album, urldiscogs, lowerprice, medianprice, higherprice, have, want) VALUES ('"+ data.category +"','"+ record.getTitle() +"','"+ record.getArtist() +"', '"+ record.getAlbum() +"','"+ record.getUrlDiscogs() +"','"+ record.getLowerPrice() +"','"+ record.getMedianPrice() +"','"+ record.getHigherPrice() +"','"+ record.getHave() +"','"+ record.getWant() +"')";
+            query = "INSERT INTO record (category, title, artist, album, urldiscogs, lowerprice, medianprice, higherprice, have, want) VALUES ('"+ data.category +"','"+ record.getTitle() +"','"+ record.getArtist() +"', '"+ record.getAlbum() +"','"+ record.getUrldiscogs() +"','"+ record.getLowerprice() +"','"+ record.getMedianprice() +"','"+ record.getHigherprice() +"','"+ record.getHave() +"','"+ record.getWant() +"')";
         }
 
 
@@ -185,6 +184,28 @@ public class bdd {
         }
 
         return "Success";
+    }
+
+    public static ArrayList<String> getRecords(String tablename){
+
+        System.out.println("Table name :"+ tablename);
+
+        ArrayList<String> records = new ArrayList<String>();
+        Statement state;
+
+
+        try {
+            state = connection().createStatement();
+            ResultSet rs = state.executeQuery("SELECT raters FROM "+tablename);
+            while (rs.next()) {
+                records.add(rs.getString(1));
+                System.out.println("Table name :"+ rs.getString(1));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return records;
     }
 
 
