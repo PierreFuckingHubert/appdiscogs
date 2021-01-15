@@ -99,7 +99,7 @@ public static void getXML(String req, Connection conn, String nameTable, Date la
 
 
 
-    Document doc = convertStringToXMLDocument( "ok" );
+    Document doc = convertStringToXMLDocument( response.toString() );
 
     String mostRecentItemTimeTab[] = doc.getElementsByTagName("updated").item(doc.getElementsByTagName("updated").getLength()-1).getTextContent().split("-");
     String mostRecentItemTime = mostRecentItemTimeTab[0]+"-"+mostRecentItemTimeTab[1]+"-"+mostRecentItemTimeTab[2];
